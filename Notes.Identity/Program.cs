@@ -2,16 +2,16 @@ using Notes.Identity;
 using Notes.Identity.Data;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.AspNetCore.Identity;
-using Notes.Identity.Model;
+using Notes.Identity.Models;
+using Microsoft.Extensions.FileProviders;
 
 var builder = WebApplication.CreateBuilder(args);
 
-builder.Services.AddPersistance(builder.Configuration);
+//builder.Services.AddPersistance(builder.Configuration);
 
-//builder.Services.AddDbContext<AuthDbContext>(options => 
-//{
-//    options.UseSqlite(builder.Configuration.GetValue<string>("DbConnection"));
-//});
+builder.Services.AddDbContext<AuthDbContext>(options => 
+    options.UseSqlite(builder.Configuration
+        .GetValue<string>("DbConnection")));
 
 builder.Services.AddIdentity<AppUser, IdentityRole>(appUserConfiguration => 
 {
@@ -39,6 +39,9 @@ builder.Services.ConfigureApplicationCookie(appCookieConfiguration =>
 
 });
 
+
+builder.Services.AddControllersWithViews();
+
 var app = builder.Build();
 
 using (var scope = app.Services.CreateScope())
@@ -51,8 +54,18 @@ using (var scope = app.Services.CreateScope())
     catch (Exception) { }
 }
 
+app.UseStaticFiles(new StaticFileOptions
+{
+    FileProvider = new PhysicalFileProvider(
+        Path.Combine(Directory.GetCurrentDirectory(), "Styles")),
+    RequestPath = "/styles"
+});
 app.UseRouting();
 app.UseIdentityServer();
+app.UseEndpoints(endpoints => 
+{
+    endpoints.MapDefaultControllerRoute();
+});
 
 app.MapGet("/", () => "Hello World!");
 

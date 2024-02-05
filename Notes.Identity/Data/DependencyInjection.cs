@@ -15,7 +15,7 @@ namespace Notes.Identity.Data
                 options.UseSqlite(connectionString);
             });
             
-            services.AddScoped(provider =>
+            services.AddScoped<AuthDbContext>(provider =>
                 provider.GetService<AuthDbContext>());
             
             return services;
